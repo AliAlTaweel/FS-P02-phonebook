@@ -5,34 +5,16 @@ import PersonForm from "./components/PersonForm";
 import axios from "axios";
 
 const App = () => {
-  const [notes, setNotes] = useState([]);
-  const [newNote, setNewNote] = useState("");
-  const [showAll, setShowAll] = useState(true);
-
-
-  
-  const addPerson = (event) => {
-    event.preventDefault();
-    const newPerson = {
-      name: "Sam",
-      number: "0987654321",
-      id: "5",
-    };
-    axios.post("http://localhost:3001/persons", newPerson).then((response) => {
-      console.log(response);
-    });
-  };
-  addPerson;
-
   const [newName, setNewName] = useState("");
   const [newNum, setNewNum] = useState("");
-  const [persons, setPersons] = useState([
-    { name: "Arto Hellas", number: "040-123456", id: 1 },
-    { name: "Ada Lovelace", number: "39-44-5323523", id: 2 },
-    { name: "Dan Abramov", number: "12-43-234345", id: 3 },
-    { name: "Mary Poppendieck", number: "39-23-6423122", id: 4 },
-  ]);
+  const [persons, setPersons] = useState([]);
   const [searchResult, setSearchResualt] = useState([]);
+
+  useEffect(() => {
+    axios.get("http://localhost:3002/persons").then((response) => {
+      setPersons(response.data);
+    });
+  });
 
   const inputChange = (event) => {
     setNewName(event.target.value);
@@ -48,12 +30,30 @@ const App = () => {
     };
 
     if (persons.some((person) => person.name === newName)) {
-      alert(`${newName} is already added to phonebook`);
-      return;
+      const checkPerosn = persons.find((person) => person.name === newName);
+      if (checkPerosn.number === newNum) {
+        alert(`${newName} is already added to phonebook`);
+        return;
+      } else {
+        const x = window.confirm(
+          `${checkPerosn.name} is already added to phonebook, replace the old number with a new one`
+        );
+        if (x) {
+          checkPerosn.number = newNum;
+          axios
+            .put(`http://localhost:3002/persons/${checkPerosn.id}`, checkPerosn)
+            .then((response) => console.log(response.data));
+          return;
+        }
+      }
     }
+
     setPersons(persons.concat(newPerson));
     setNewName("");
     setNewNum("");
+    axios.post("http://localhost:3002/persons", newPerson).then((response) => {
+      console.log(response.data);
+    });
   };
 
   const handleSerach = (event) => {
@@ -67,6 +67,28 @@ const App = () => {
         person.name.toLowerCase().includes(event.target.value.toLowerCase())
       )
     );
+  };
+  const handleDelete = async (id, person) => {
+    console.log(id);
+    const deltetconfirm = window.confirm(`Delete ${person.name} ?`);
+    if (deltetconfirm) {
+      try {
+        const response = await axios.delete(
+          `http://localhost:3002/persons/${id}`
+        );
+
+        if (response.status === 200) {
+          alert("Item deleted successfully!");
+          setPersons(persons.filter((person) => person.id !== id));
+        } else {
+          alert("Failed to delete the item.");
+        }
+      } catch (error) {
+        alert("Error occurred: " + error.message);
+      }
+    } else {
+      alert("Delete action canceled.");
+    }
   };
 
   return (
@@ -84,10 +106,10 @@ const App = () => {
       />
 
       <h2>Numbers</h2>
-      <Persons persons={persons} />
+      <Persons persons={persons} handleDelete={handleDelete} />
 
       <h2>Search Reasult</h2>
-      <Persons persons={searchResult} />
+      <Persons persons={searchResult} handleDelete={handleDelete} />
     </div>
   );
 };
