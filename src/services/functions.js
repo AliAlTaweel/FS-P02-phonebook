@@ -9,4 +9,12 @@ const getAll = () => {
   return request;
 };
 
-export default { getAll };
+const disp = (text, name) => {
+  console.log(`${text} ${name}`);
+  setAddedMessage(`${text} ${name}`);
+  setTimeout(() => {
+    setAddedMessage(null);
+  }, 5000);
+};
+
+export default { getAll, disp };

@@ -4,11 +4,13 @@ import Filter from "./components/Filter";
 import PersonForm from "./components/PersonForm";
 import axios from "axios";
 import services from "./services/functions";
+import Notification from "./components/Notification";
 const App = () => {
   const [newName, setNewName] = useState("");
   const [newNum, setNewNum] = useState("");
   const [persons, setPersons] = useState([]);
   const [searchResult, setSearchResualt] = useState([]);
+  const [addedMessage, setAddedMessage] = useState("");
 
   useEffect(() => {
     services.getAll().then((x) => {
@@ -53,6 +55,14 @@ const App = () => {
     setNewNum("");
     axios.post("http://localhost:3002/persons", newPerson).then((response) => {
       console.log(response.data);
+      
+      setAddedMessage(
+        `Added ${newName}`
+      )
+      setTimeout(() => {
+        setAddedMessage(null)
+      }, 5000);
+
     });
   };
   const handleSerach = (event) => {
@@ -77,7 +87,12 @@ const App = () => {
         );
 
         if (response.status === 200) {
-          alert("Item deleted successfully!");
+          setAddedMessage(
+            `${person.name} deleted successfully! `
+          )
+          setTimeout(() => {
+            setAddedMessage(null)
+          }, 5000);
           setPersons(persons.filter((person) => person.id !== id));
         } else {
           alert("Failed to delete the item.");
@@ -93,6 +108,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={addedMessage} />
       <Filter onChange={handleSerach} />
 
       <h2>add a new</h2>
