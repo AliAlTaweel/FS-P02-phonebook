@@ -3,7 +3,7 @@ import Persons from "./components/Persons";
 import Filter from "./components/Filter";
 import PersonForm from "./components/PersonForm";
 import axios from "axios";
-
+import services from "./services/functions";
 const App = () => {
   const [newName, setNewName] = useState("");
   const [newNum, setNewNum] = useState("");
@@ -11,10 +11,10 @@ const App = () => {
   const [searchResult, setSearchResualt] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:3002/persons").then((response) => {
-      setPersons(response.data);
+    services.getAll().then((x) => {
+      setPersons(x);
     });
-  });
+  }, []);
 
   const inputChange = (event) => {
     setNewName(event.target.value);
@@ -55,7 +55,6 @@ const App = () => {
       console.log(response.data);
     });
   };
-
   const handleSerach = (event) => {
     if (event.target.value == "") {
       return "";
