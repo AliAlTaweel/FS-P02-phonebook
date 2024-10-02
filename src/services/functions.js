@@ -2,18 +2,24 @@ import axios from "axios";
 const baseUrl = "http://localhost:3302/persons";
 
 const getAll = () => {
-  const request = axios.get(baseUrl).then((request) => {
-    return request.data;
-  });
+  const request = axios.get(baseUrl).then((request) => request.data);
   return request;
 };
 
-const disp = (text, name) => {
-  console.log(`${text} ${name}`);
-  setAddedMessage(`${text} ${name}`);
-  setTimeout(() => {
-    setAddedMessage(null);
-  }, 5000);
+const update = (checkPerosn) => {
+  const x = axios.put(`${baseUrl}/${checkPerosn.id}`, checkPerosn);
+  return x.then((respnse) => respnse.data);
 };
 
-export default { getAll, disp };
+const deleteUser = async (id) => {
+  const d = axios.delete(`${baseUrl}/${id}`);
+  const response = await d;
+  return response.data;
+};
+
+const celenNameNum = (setNewName,setNewNum) => {
+  setNewName("");
+  setNewNum("");
+};
+
+export default { getAll, update, deleteUser, celenNameNum };

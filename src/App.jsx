@@ -14,7 +14,6 @@ const App = () => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    console.log("check01");
     services.getAll().then((x) => {
       setPersons(x);
     });
@@ -34,19 +33,25 @@ const App = () => {
     };
 
     if (persons.some((person) => person.name === newName)) {
-      const checkPerosn = persons.find((person) => person.name === newName);
-      if (checkPerosn.number === newNum) {
+      const checkPerson = persons.find((person) => person.name === newName);
+
+      if (checkPerson.number === newNum) {
         alert(`${newName} is already added to phonebook`);
         return;
       } else {
         const x = window.confirm(
-          `${checkPerosn.name} is already added to phonebook, replace the old number with a new one`
+          `${checkPerson.name} is already added to phonebook, replace the old number with a new one`
         );
         if (x) {
-          checkPerosn.number = newNum;
-          axios
-            .put(`http://localhost:3002/persons/${checkPerosn.id}`, checkPerosn)
-            .then(() => {
+          const updatedPerson = {...checkPerson,number:newNum};
+        
+          services
+            .update(updatedPerson)
+            .then((returnPerson) => {
+              setPersons(
+                persons.map((p) => (p.id !== checkPerson.id ? p : returnPerson))
+              );
+
               setAddedMessage(`Udated ${newName}`);
               setVisible(true);
               setTimeout(() => {
@@ -63,14 +68,15 @@ const App = () => {
                 setVisible(false);
                 setAddedMessage("");
               }, 5000);
+              setPersons(persons.filter((person) => person.name !== newName));
+              services.celenNameNum(setNewName, setNewNum);
             });
         }
       }
     } else {
-      setPersons(persons.concat(newPerson));
-      setNewName("");
-      setNewNum("");
-      axios.post("http://localhost:3002/persons", newPerson).then(() => {
+      axios.post("http://localhost:3302/persons", newPerson).then(() => {
+        setPersons(persons.concat(newPerson));
+        services.celenNameNum(setNewName, setNewNum);
         setAddedMessage(`Added ${newName}`);
         setVisible(true);
         setTimeout(() => {
@@ -81,27 +87,23 @@ const App = () => {
     }
   };
   const handleSerach = (event) => {
-    if (event.target.value == "") {
-      return "";
+    const searchName = event.target.value.trim();
+    if (searchName === "") {
+      setSearchResualt([]);
+      return;
     }
-    event.preventDefault();
-    const searchName = event.target.value;
     setSearchResualt(
       persons.filter((person) =>
         person.name.toLowerCase().includes(event.target.value.toLowerCase())
       )
     );
   };
-  const handleDelete = async (id, person) => {
-    console.log(id);
+  const handleDelete = (id, person) => {
     const deltetconfirm = window.confirm(`Delete ${person.name} ?`);
     if (deltetconfirm) {
-      try {
-        const response = await axios.delete(
-          `http://localhost:3002/persons/${id}`
-        );
-
-        if (response.status === 200) {
+      services
+        .deleteUser(id)
+        .then(() => {
           setAddedMessage(`${person.name} deleted successfully! `);
           setVisible(true);
           setTimeout(() => {
@@ -110,14 +112,8 @@ const App = () => {
           }, 5000);
 
           setPersons(persons.filter((person) => person.id !== id));
-        } else {
-          alert("Failed to delete the item.");
-        }
-      } catch (error) {
-        alert("Error occurred: " + error.message);
-      }
-    } else {
-      alert("Delete action canceled.");
+        })
+        .catch((error) => {});
     }
   };
 
