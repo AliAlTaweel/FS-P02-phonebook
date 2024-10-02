@@ -18,7 +18,7 @@ const App = () => {
     services.getAll().then((x) => {
       setPersons(x);
     });
-  }, [persons]);
+  }, []);
 
   const inputChange = (event) => {
     setNewName(event.target.value);
