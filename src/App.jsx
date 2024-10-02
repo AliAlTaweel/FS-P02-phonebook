@@ -11,6 +11,7 @@ const App = () => {
   const [persons, setPersons] = useState([]);
   const [searchResult, setSearchResualt] = useState([]);
   const [addedMessage, setAddedMessage] = useState("");
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     services.getAll().then((x) => {
@@ -44,7 +45,16 @@ const App = () => {
           checkPerosn.number = newNum;
           axios
             .put(`http://localhost:3002/persons/${checkPerosn.id}`, checkPerosn)
-            .then((response) => console.log(response.data));
+            .then((response) => {
+              console.log(response.data);
+              setAddedMessage(`Udated ${newName}`);
+              setVisible(true);
+              setTimeout(() => {
+                setVisible(false);
+                setAddedMessage("");
+              }, 5000);
+            });
+
           return;
         }
       }
@@ -55,14 +65,13 @@ const App = () => {
     setNewNum("");
     axios.post("http://localhost:3002/persons", newPerson).then((response) => {
       console.log(response.data);
-      
-      setAddedMessage(
-        `Added ${newName}`
-      )
-      setTimeout(() => {
-        setAddedMessage(null)
-      }, 5000);
 
+      setAddedMessage(`Added ${newName}`);
+      setVisible(true);
+      setTimeout(() => {
+        setVisible(false);
+        setAddedMessage("");
+      }, 5000);
     });
   };
   const handleSerach = (event) => {
@@ -87,12 +96,13 @@ const App = () => {
         );
 
         if (response.status === 200) {
-          setAddedMessage(
-            `${person.name} deleted successfully! `
-          )
+          setAddedMessage(`${person.name} deleted successfully! `);
+          setVisible(true);
           setTimeout(() => {
-            setAddedMessage(null)
+            setAddedMessage("");
+            setVisible(false);
           }, 5000);
+
           setPersons(persons.filter((person) => person.id !== id));
         } else {
           alert("Failed to delete the item.");
@@ -108,7 +118,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification message={addedMessage} />
+      <Notification message={addedMessage} visible={visible} />
       <Filter onChange={handleSerach} />
 
       <h2>add a new</h2>
