@@ -5,7 +5,6 @@ const getAll = () => {
   const request = axios.get(baseUrl).then((request) => {
     return request.data;
   });
-
   return request;
 };
 

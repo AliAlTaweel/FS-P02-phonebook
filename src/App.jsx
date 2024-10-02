@@ -14,10 +14,11 @@ const App = () => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    console.log("check01");
     services.getAll().then((x) => {
       setPersons(x);
     });
-  }, []);
+  }, [persons]);
 
   const inputChange = (event) => {
     setNewName(event.target.value);
@@ -45,34 +46,39 @@ const App = () => {
           checkPerosn.number = newNum;
           axios
             .put(`http://localhost:3002/persons/${checkPerosn.id}`, checkPerosn)
-            .then((response) => {
-              console.log(response.data);
+            .then(() => {
               setAddedMessage(`Udated ${newName}`);
               setVisible(true);
               setTimeout(() => {
                 setVisible(false);
                 setAddedMessage("");
               }, 5000);
+            })
+            .catch(() => {
+              setAddedMessage(
+                `Information of ${newName} has been already been removed from the server`
+              );
+              setVisible(true);
+              setTimeout(() => {
+                setVisible(false);
+                setAddedMessage("");
+              }, 5000);
             });
-
-          return;
         }
       }
+    } else {
+      setPersons(persons.concat(newPerson));
+      setNewName("");
+      setNewNum("");
+      axios.post("http://localhost:3002/persons", newPerson).then(() => {
+        setAddedMessage(`Added ${newName}`);
+        setVisible(true);
+        setTimeout(() => {
+          setVisible(false);
+          setAddedMessage("");
+        }, 5000);
+      });
     }
-
-    setPersons(persons.concat(newPerson));
-    setNewName("");
-    setNewNum("");
-    axios.post("http://localhost:3002/persons", newPerson).then((response) => {
-      console.log(response.data);
-
-      setAddedMessage(`Added ${newName}`);
-      setVisible(true);
-      setTimeout(() => {
-        setVisible(false);
-        setAddedMessage("");
-      }, 5000);
-    });
   };
   const handleSerach = (event) => {
     if (event.target.value == "") {
